@@ -189,7 +189,7 @@
                 $('#modalInputPolyline').modal('show');
 
                 //Modal dismiss reload page
-                $('#modalInputPolyline').on('hidden.bs.modal', function (){
+                $('#modalInputPolyline').on('hidden.bs.modal', function() {
                     location.reload();
                 });
 
@@ -203,10 +203,10 @@
                 $('#modalInputPolygon').modal('show');
 
                 //Modal dismiss reload page
-                $('#modalInputPolygon').on('hidden.bs.modal', function (){
+                $('#modalInputPolygon').on('hidden.bs.modal', function() {
                     location.reload();
                 });
-                
+
             } else if (type === 'marker') {
                 console.log("Create " + type);
 
@@ -217,7 +217,7 @@
                 $('#modalInputPoint').modal('show');
 
                 //Modal dismiss reload page
-                $('#modalInputPoint').on('hidden.bs.modal', function (){
+                $('#modalInputPoint').on('hidden.bs.modal', function() {
                     location.reload();
                 });
             } else {
@@ -226,5 +226,91 @@
 
             drawnItems.addLayer(layer);
         });
+
+        // GeoJSON Point
+        var points = L.geoJSON(null, {
+            // Style
+
+            // onEachFeature
+            onEachFeature: function(feature, layer) {
+                // variable popup content
+                var popup_content = "Nama: " + feature.properties.nama + "<br>" +
+                    "Description: " + feature.properties.description + "<br>" +
+                    "Dibuat: " + feature.properties.created_at;
+
+                layer.on({
+                    click: function(e) {
+                        points.bindPopup(popup_content);
+                    },
+                });
+            },
+
+        });
+
+        var polylines = L.geoJSON(null, {
+            // Style
+
+            // onEachFeature
+            onEachFeature: function(feature, layer) {
+                // variable popup content
+                var popup_content = "Nama: " + feature.properties.nama + "<br>" +
+                    "Description: " + feature.properties.description + "<br>" +
+                    "Dibuat: " + feature.properties.created_at;
+
+                layer.on({
+                    click: function(e) {
+                        polylines.bindPopup(popup_content);
+                    },
+                });
+            },
+
+        });
+
+        var polygons = L.geoJSON(null, {
+            // Style
+
+            // onEachFeature
+            onEachFeature: function(feature, layer) {
+                // variable popup content
+                var popup_content = "Nama: " + feature.properties.nama + "<br>" +
+                    "Description: " + feature.properties.description + "<br>" +
+                    "Dibuat: " + feature.properties.created_at;
+
+                layer.on({
+                    click: function(e) {
+                        polygons.bindPopup(popup_content);
+                    },
+                });
+            },
+
+        });
+
+        $.getJSON("{{ route('geojson_points') }}", function(data) {
+            points.addData(data);
+            map.addLayer(points);
+        });
+
+        $.getJSON("{{ route('geojson_polylines') }}", function(data) {
+            polylines.addData(data);
+            map.addLayer(polylines);
+        });
+
+        $.getJSON("{{ route('geojson_polygons') }}", function(data) {
+            polygons.addData(data);
+            map.addLayer(polygons);
+        });
+
+        // Control Layer
+        var baseMaps = {
+        };
+
+        var overlayMaps = {
+            "Points": points,
+            "Polylines": polylines,
+            "Polygons": polygons,
+        };
+
+        var controllayer = L.control.layers(baseMaps, overlayMaps);
+        controllayer.addTo(map);
     </script>
 @endsection
