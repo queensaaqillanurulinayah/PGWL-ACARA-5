@@ -2,7 +2,7 @@
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
 
-            <a class="navbar-brand" href="#">{{ $title }}</a>
+            <a class="navbar-brand" href="#"><i class="fa-solid fa-location-dot"></i>{{ $title }}</a>
 
             <button class="navbar-toggler"
                 type="button"
@@ -19,17 +19,17 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{{ route('home') }}">Beranda</a>
+                        <a class="nav-link active" aria-current="page" href="{{ route('home') }}"><i class="fa-solid fa-house"></i>Beranda</a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('peta') }}">Peta</a>
+                        <a class="nav-link" href="{{ route('peta') }}"><i class="fa-solid fa-map"></i>Peta</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('tabel') }}">Tabel</a>
+                        <a class="nav-link" href="{{ route('tabel') }}"><i class="fa-solid fa-table"></i>Tabel</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Tentang</a>
+                        <a class="nav-link" href="#"><i class="fa-solid fa-circle-info"></i>Tentang</a>
                     </li>
 
                 </ul>

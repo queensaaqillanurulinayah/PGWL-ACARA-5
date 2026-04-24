@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 class pointsModel extends Model
 {
     protected $table = 'points';
-    protected $fillable = ['geom', 'nama', 'description'];
+    protected $fillable = ['geom', 'nama', 'description', 'image'];
 
     public function geojson_points()
     {
