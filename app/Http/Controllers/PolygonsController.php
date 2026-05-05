@@ -114,6 +114,22 @@ class PolygonsController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+    //Mencari nama file gambar berdasarkan ID polygons
+    $image = optional($this->polygons->find($id, ['image']))->image;
+
+    //Menghapus titik dari database
+    if (!$this->polygons->destroy($id)) {
+            return redirect()->route('peta')->with('error', 'Gagal menghapus data polygons.');
+        }
+
+        //hapus file gambar jika ada
+        if($image !=null){
+            //cek apakah file gambar ada sebelum menghapus
+            if(file_exists('./storage/images/' . $image)){
+                //hapus file gambar
+                unlink('./storage/images/' . $image);
+            }
+        }
+        return redirect()->route('peta')->with('success', 'Data polygons berhasil dihapus.');
     }
 }

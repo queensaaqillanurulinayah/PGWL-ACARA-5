@@ -33,6 +33,7 @@ class PointsController extends Controller
                 'nama' => 'required|string|max:255',
                 'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
 
+
             ],
             [
                 'geometry_point.required' => 'Field geometry point harus diisi.',
@@ -104,6 +105,24 @@ class PointsController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+
+    //Mencari nama file gambar berdasarkan ID point
+    $image = optional($this->points->find($id, ['image']))->image;
+
+    //Menghapus titik dari database
+    if (!$this->points->destroy($id)) {
+            return redirect()->route('peta')->with('error', 'Gagal menghapus data
+    point.');
+        }
+
+        //hapus file gambar jika ada
+        if($image !=null){
+            //cek apakah file gambar ada sebelum menghapus
+            if(file_exists('./storage/images/' . $image)){
+                //hapus file gambar
+                unlink('./storage/images/' . $image);
+            }
+        }
+        return redirect()->route('peta')->with('success', 'Data point berhasil dihapus.');
     }
 }
