@@ -3,20 +3,133 @@
 @section('styles')
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css">
-
     <style>
+        /* HALAMAN */
         html,
         body {
             height: 100%;
             margin: 0;
+            background: #eef4ff;
+            font-family: 'Segoe UI', sans-serif;
         }
 
+        /* MAP */
         #map {
             height: calc(100vh - 56px);
-            /* menyesuaikan tinggi navbar */
             width: 100%;
+            border-radius: 22px;
+            overflow: hidden;
+            border: 5px solid #ffffff;
+            box-shadow: 0 12px 35px rgba(13, 110, 253, .25);
+            transition: .3s ease;
+        }
+
+        #map:hover {
+            box-shadow: 0 16px 40px rgba(13, 110, 253, .35);
+        }
+
+        /* ZOOM + DRAW TOOL */
+        .leaflet-bar {
+            border: none !important;
+            border-radius: 16px !important;
+            overflow: hidden;
+            box-shadow: 0 6px 18px #3a65db26;
+        }
+
+        /* TOOL DRAW */
+        .leaflet-draw-toolbar a {
+            background-color: #ccddf8 !important;
+            border-bottom: 1px solid #ffffff30 !important;
+            transition: .3s;
+        }
+
+        /* Hover */
+        .leaflet-draw-toolbar a:hover {
+            background-color: #4da3ff !important;
+        }
+
+        /* Tombol aktif */
+        .leaflet-draw-toolbar .leaflet-draw-toolbar-button-enabled {
+            background-color: #083d99 !important;
+        }
+
+        /* Container */
+        .leaflet-draw-toolbar {
+            border-radius: 14px !important;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(13, 110, 253, .25);
+        }
+
+        /* CONTROL LAYER */
+        .leaflet-control-layers {
+            border: none !important;
+            border-radius: 18px !important;
+            background: rgba(255, 255, 255, .95) !important;
+            box-shadow: 0 8px 24px rgba(13, 110, 253, .18);
+            padding: 10px;
+        }
+
+        .leaflet-control-layers-expanded {
+            color: #244b88;
+            font-weight: 500;
+        }
+
+        /* POPUP */
+        .leaflet-popup-content-wrapper {
+            background: linear-gradient(180deg, #ffffff, #f5f9ff);
+            border-radius: 18px !important;
+            box-shadow: 0 10px 25px rgba(13, 110, 253, .18);
+            border-top: 5px solid #0d6efd;
+        }
+
+        .leaflet-popup-content {
+            margin: 18px;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #34495e;
+        }
+
+        .leaflet-popup-tip {
+            background: #ffffff;
+        }
+
+        /* GAMBAR POPUP */
+        .leaflet-popup-content img {
+            border-radius: 14px;
+            margin-top: 10px;
+            border: 3px solid #dbeafe;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, .12);
+        }
+
+        /* BUTTON POPUP */
+        .leaflet-popup-content .btn {
+            border-radius: 10px;
+            transition: .25s;
+            font-weight: 600;
+        }
+
+        .leaflet-popup-content .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* ATTRIBUTION */
+        .leaflet-control-attribution {
+            background: rgba(255, 255, 255, .92) !important;
+            border-radius: 12px;
+            padding: 5px 12px;
+            color: #0d47a1;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, .10);
+        }
+
+        /* SCROLLBAR POPUP */
+        .leaflet-popup-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .leaflet-popup-content::-webkit-scrollbar-thumb {
+            background: #60a5fa;
+            border-radius: 10px;
         }
     </style>
 @endsection
@@ -270,16 +383,39 @@
             // onEachFeature
             onEachFeature: function(feature, layer) {
                 //Route delete point
-                var routedelete = "{{  route('points.delete', ':id') }}";
+                var routedelete = "{{ route('points.delete', ':id') }}";
                 routedelete = routedelete.replace(':id', feature.properties.id);
 
+                //Route edit point
+                var routeedit = "{{ route('point.edit', ':id') }}";
+                routeedit = routeedit.replace(':id', feature.properties.id);
+
                 // variable popup content
-                var popup_content = "Nama: " + feature.properties.nama + "<br>" +
+                var popup_content =
+                    "Nama: " + feature.properties.nama + "<br>" +
                     "Description: " + feature.properties.description + "<br>" +
-                    "Dibuat: " + feature.properties.created_at + "<br>" + "<img src='{{ asset('storage/images') }}/" + feature.
-                properties.image + "' alt='Image Point' class='img-thumbnail' width='600'>" +
-                "<br><br>" + "<form action='" + routedelete + "' method='post'>" + '@csrf' + '@method("delete")' +
-                    "<button type='submit' class='btn btn-sm btn-danger' title='Delete feature' onclick='return confirm(`Are you sure want to delete this feature?`)'><i class='fa-solid fa-trash'></i></button>" + "</form>";
+                    "Dibuat: " + feature.properties.created_at + "<br>" +
+                    "<img src='{{ asset('storage/images') }}/" + feature.properties.image +
+                    "' alt='Image Point' class='img-thumbnail' width='600'>" +
+                    "<br><br>" +
+                    "<div class='row'>" +
+                    "<div class='col-2'>" +
+                    "<form action='" + routedelete + "' method='post'>" +
+                    '@csrf' +
+                    '@method('delete')' +
+                    "<button type='submit' class='btn btn-sm btn-danger' title='Delete feature' onclick='return confirm(`Are you sure want to delete this feature?`)'>" +
+                    "<i class='fa-solid fa-trash'></i>" +
+                    "</button>" +
+                    "</form>" +
+                    "</div>" +
+
+                    "<div class='col-2'>" +
+                    "<a href='" + routeedit + "' class='btn btn-warning btn-sm' title='Edit Points'>" +
+                    "<i class='fa-solid fa-pen-to-square'></i>" +
+                    "</a>" +
+                    "</div>" +
+
+                    "</div>";
 
                 layer.on({
                     click: function(e) {
@@ -296,16 +432,36 @@
             // onEachFeature
             onEachFeature: function(feature, layer) {
                 //Route delete polylines
-                var routedelete = "{{  route('polylines.delete', ':id') }}";
+                var routedelete = "{{ route('polylines.delete', ':id') }}";
                 routedelete = routedelete.replace(':id', feature.properties.id);
+
+                var routeedit = "{{ route('polyline.edit', ':id') }}";
+                routeedit = routeedit.replace(':id', feature.properties.id);
 
                 // variable popup content
                 var popup_content = "Nama: " + feature.properties.nama + "<br>" +
                     "Description: " + feature.properties.description + "<br>" +
-                    "Dibuat: " + feature.properties.created_at + "<br>" + "<img src='{{ asset('storage/images') }}/" + feature.
+                    "Dibuat: " + feature.properties.created_at + "<br>" +
+                    "<img src='{{ asset('storage/images') }}/" + feature.
                 properties.image + "' alt='Image Polyline' class='img-thumbnail' width='600'>" +
-                "<br><br>" + "<form action='" + routedelete + "' method='post'>" + '@csrf' + '@method("delete")' +
-                    "<button type='submit' class='btn btn-sm btn-danger' title='Delete feature' onclick='return confirm(`Are you sure want to delete this feature?`)'><i class='fa-solid fa-trash'></i></button>" + "</form>";
+                    "<br><br>" + "<div class='row'>" +
+                    "<div class='col-2'>" +
+                    "<form action='" + routedelete + "' method='post'>" +
+                    '@csrf' +
+                    '@method('delete')' +
+                    "<button type='submit' class='btn btn-sm btn-danger' title='Delete feature' onclick='return confirm(`Are you sure want to delete this feature?`)'>" +
+                    "<i class='fa-solid fa-trash'></i>" +
+                    "</button>" +
+                    "</form>" +
+                    "</div>" +
+
+                    "<div class='col-2'>" +
+                    "<a href='" + routeedit + "' class='btn btn-warning btn-sm' title='Edit Polylines'>" +
+                    "<i class='fa-solid fa-pen-to-square'></i>" +
+                    "</a>" +
+                    "</div>" +
+
+                    "</div>";
 
                 layer.on({
                     click: function(e) {
@@ -322,16 +478,36 @@
             // onEachFeature
             onEachFeature: function(feature, layer) {
                 //Route delete polygons
-                var routedelete = "{{  route('polygons.delete', ':id') }}";
+                var routedelete = "{{ route('polygons.delete', ':id') }}";
                 routedelete = routedelete.replace(':id', feature.properties.id);
+
+                var routeedit = "{{ route('polygon.edit', ':id') }}";
+                routeedit = routeedit.replace(':id', feature.properties.id);
 
                 // variable popup content
                 var popup_content = "Nama: " + feature.properties.nama + "<br>" +
                     "Description: " + feature.properties.description + "<br>" +
-                    "Dibuat: " + feature.properties.created_at + "<br>" + "<img src='{{ asset('storage/images') }}/" + feature.
-                properties.image + "' alt='Image Point' class='img-thumbnail' width='600'>" +
-                "<br><br>" + "<form action='" + routedelete + "' method='post'>" + '@csrf' + '@method("delete")' +
-                    "<button type='submit' class='btn btn-sm btn-danger' title='Delete feature' onclick='return confirm(`Are you sure want to delete this feature?`)'><i class='fa-solid fa-trash'></i></button>" + "</form>";
+                    "Dibuat: " + feature.properties.created_at + "<br>" +
+                    "<img src='{{ asset('storage/images') }}/" + feature.
+                properties.image + "' alt='Image Polygons' class='img-thumbnail' width='600'>" +
+                    "<br><br>" + "<div class='row'>" +
+                    "<div class='col-2'>" +
+                    "<form action='" + routedelete + "' method='post'>" +
+                    '@csrf' +
+                    '@method('delete')' +
+                    "<button type='submit' class='btn btn-sm btn-danger' title='Delete feature' onclick='return confirm(`Are you sure want to delete this feature?`)'>" +
+                    "<i class='fa-solid fa-trash'></i>" +
+                    "</button>" +
+                    "</form>" +
+                    "</div>" +
+
+                    "<div class='col-2'>" +
+                    "<a href='" + routeedit + "' class='btn btn-warning btn-sm' title='Edit Points'>" +
+                    "<i class='fa-solid fa-pen-to-square'></i>" +
+                    "</a>" +
+                    "</div>" +
+
+                    "</div>";
 
                 layer.on({
                     click: function(e) {

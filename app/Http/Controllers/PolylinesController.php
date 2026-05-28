@@ -96,7 +96,13 @@ class PolylinesController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $data = [
+            'title' => 'Edit Polyline',
+            'id' => $id,
+
+        ];
+
+        return view('map-edit-polyline', $data);
     }
 
     /**
@@ -104,7 +110,65 @@ class PolylinesController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate(
+            [
+                'geometry' => 'required',
+                'nama' => 'required|string|max:255',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+
+
+            ],
+            [
+                'geometry.required' => 'Field geometry point harus diisi.',
+                'nama.required' => 'Field nama harus diisi.',
+                'nama.string' => 'Field nama harus berupa string.',
+                'nama.max' => 'Field nama tidak boleh lebih dari 255 karakter.',
+                'image.image' => 'File harus berupa gambar!',
+                'image.mimes' => 'Format gambar tidak valid!',
+                'image.max' => 'Ukuran gambar terlalu besar!',
+            ]
+        );
+
+        //Create directory for images if it doesn't exist
+        if (!is_dir('storage/images')) {
+            mkdir('./storage/images', 0777);
+        }
+
+        $image_old = $this->polylines->find($id)->image;
+
+        //Get the upload image
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $name_image = time() . "_point." . strtolower($image->getClientOriginalExtension());
+            $image->move('storage/images', $name_image);
+
+            //hapus file gambar jika ada
+            if($image_old !=null){
+            //cek apakah file gambar ada sebelum menghapus
+                if(file_exists('./storage/images/' . $image_old)){
+                //hapus file gambar
+                unlink('./storage/images/' . $image_old);
+                }
+            }
+
+        } else {
+            $name_image = $image_old;
+        }
+
+        $data = [
+            'geom' => $request->geometry,
+            'nama' => $request->nama,
+            'description' => $request->description,
+            'image' => $name_image,
+        ];
+
+        if (!$this->polylines->find($id)->update($data)) {
+            return redirect()->route('peta')->with('error', 'Gagal memperbarui data
+    polyline.');
+        }
+
+        return redirect()->route('peta')->with('success', 'Berhasil memperbarui data
+    garis.');
     }
 
     /**

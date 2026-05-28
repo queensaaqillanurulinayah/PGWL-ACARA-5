@@ -41,4 +41,37 @@ class polylinesModel extends Model
 
         return $geojson;
     }
+
+    public function geojson_polyline($id)
+    {
+        $polylines = $this->select(DB::raw('id, ST_AsGeoJSON(geom) as geojson, nama,
+        description, image, created_at, updated_at'))
+            ->where('id', $id)
+            ->get();
+
+        $geojson = [
+            'type' => 'FeatureCollection',
+            'features' => []
+        ];
+
+        //perulangan setiap garis dan buat fitur
+        foreach ($polylines as $p) {
+            $feature = [
+                'type' => 'Feature',
+                'geometry' => json_decode($p->geojson),
+                'properties' => [
+                    'id' => $p->id,
+                    'nama' => $p->nama,
+                    'description' => $p->description,
+                    'image' => $p->image,
+                    'created_at' => $p->created_at,
+                    'updated_at' => $p->updated_at
+                ]
+            ];
+
+            array_push($geojson['features'], $feature);
+        }
+
+        return $geojson;
+    }
 }
